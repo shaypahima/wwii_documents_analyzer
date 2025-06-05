@@ -100,29 +100,41 @@ export default function Documents() {
           </div>
           
           {/* Filters */}
-          <div className="flex gap-2">
-            <select
-              value={filters.documentType}
-              onChange={(e) => handleFilterChange('documentType', e.target.value)}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            >
-              <option value="">All Types</option>
-              {documentTypes.map(type => (
-                <option key={type} value={type} className="capitalize">
-                  {type.replace('_', ' ')}
-                </option>
-              ))}
-            </select>
+          <div className="flex gap-3">
+            <div className="relative">
+              <select
+                value={filters.documentType}
+                onChange={(e) => handleFilterChange('documentType', e.target.value)}
+                className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm text-gray-900 font-medium shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer min-w-[140px]"
+              >
+                <option value="">All Types</option>
+                {documentTypes.map(type => (
+                  <option key={type} value={type} className="capitalize text-gray-900">
+                    {type.replace('_', ' ')}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <Filter className="h-4 w-4 text-gray-400" />
+              </div>
+            </div>
 
-            <select
-              value={filters.sortBy}
-              onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            >
-              <option value="createdAt">Newest First</option>
-              <option value="title">Title A-Z</option>
-              <option value="documentType">Type</option>
-            </select>
+            <div className="relative">
+              <select
+                value={filters.sortBy}
+                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm text-gray-900 font-medium shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer min-w-[140px]"
+              >
+                <option value="createdAt" className="text-gray-900">Newest First</option>
+                <option value="title" className="text-gray-900">Title A-Z</option>
+                <option value="documentType" className="text-gray-900">Type</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
 
