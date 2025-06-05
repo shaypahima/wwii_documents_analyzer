@@ -14,6 +14,7 @@ import {
   XCircle
 } from 'lucide-react';
 import { Layout } from '../components/Layout';
+import { ImagePreview } from '../components/ImagePreview';
 import { useFileMetadata } from '../hooks/useStorage';
 import { useDocumentAnalysis, useDocumentProcessor } from '../hooks/useDocuments';
 import { formatFileSize, formatDate, formatMimeType } from '../lib/utils';
@@ -235,28 +236,41 @@ export default function Analyze() {
         {/* Analysis Results */}
         {analysis && (
           <div className="space-y-6">
-            {/* Document Summary */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">Analysis Results</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <span className="font-medium text-gray-500">Title:</span>
-                  <div className="mt-1 text-lg font-medium text-gray-900">{analysis.analysis.title}</div>
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Document Preview */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Document Preview</h2>
+                <ImagePreview
+                  src={analysis.image}
+                  alt={`Preview of ${analysis.fileName}`}
+                  className=""
+                  containerClassName="w-full h-96 border border-gray-200 rounded-lg"
+                />
+              </div>
+
+              {/* Document Summary */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-3">Analysis Results</h2>
                 
-                <div>
-                  <span className="font-medium text-gray-500">Document Type:</span>
-                  <div className="mt-1">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
-                      {analysis.analysis.documentType.replace('_', ' ')}
-                    </span>
+                <div className="space-y-4">
+                  <div>
+                    <span className="font-medium text-gray-500">Title:</span>
+                    <div className="mt-1 text-lg font-medium text-gray-900">{analysis.analysis.title}</div>
                   </div>
-                </div>
-                
-                <div>
-                  <span className="font-medium text-gray-500">Content Summary:</span>
-                  <div className="mt-1 text-gray-900">{analysis.analysis.content}</div>
+                  
+                  <div>
+                    <span className="font-medium text-gray-500">Document Type:</span>
+                    <div className="mt-1">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                        {analysis.analysis.documentType.replace('_', ' ')}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <span className="font-medium text-gray-500">Content Summary:</span>
+                    <div className="mt-1 text-gray-900">{analysis.analysis.content}</div>
+                  </div>
                 </div>
               </div>
             </div>

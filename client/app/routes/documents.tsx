@@ -30,7 +30,7 @@ export default function Documents() {
     setFilters(newFilters);
     fetchDocuments(newFilters);
   };
-
+  console.log(documents, 'documents');
   const displayDocuments = isSearching ? (results?.documents || []) : (documents || []);
   const displayTotal = isSearching ? (results?.total || 0) : total;
 

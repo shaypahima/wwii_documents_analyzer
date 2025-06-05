@@ -17,7 +17,7 @@ export const documentsApi = {
     console.log('getDocuments', filters); 
     const response = await api.get<ApiResponse<SearchResult>>('/documents', { params: filters });
     console.log('getDocuments response', response.data);
-    return response.data.data;
+    return response.data;
   },
 
   // Get document by ID

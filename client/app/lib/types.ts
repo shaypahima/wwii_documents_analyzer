@@ -29,6 +29,7 @@ export interface Document {
   filePath?: string;
   mimeType: string;
   fileSize: number;
+  imageUrl?: string;
   entities: Entity[];
   createdAt: string;
   updatedAt: string;

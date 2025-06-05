@@ -102,7 +102,7 @@ export class DocumentController {
 
       res.status(HttpStatusCode.OK).json({
         success: true,
-        data: result.documents,
+        documents: result.documents,
         pagination: {
           page: result.page,
           limit: result.limit,

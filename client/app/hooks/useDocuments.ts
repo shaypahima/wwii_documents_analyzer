@@ -13,6 +13,8 @@ export function useDocuments(filters: DocumentFilters = {}) {
     setError(null);
     try {
       const data = await documentsApi.getDocuments({ ...filters, ...newFilters });
+      console.log(data, 'data from useDocuments');
+
       setDocuments(data.documents);
       setTotal(data.total);
     } catch (err) {
@@ -25,7 +27,6 @@ export function useDocuments(filters: DocumentFilters = {}) {
   useEffect(() => {
     fetchDocuments();
   }, []);
-
   return {
     documents,
     total,

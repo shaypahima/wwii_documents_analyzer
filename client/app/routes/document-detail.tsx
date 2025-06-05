@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router';
 import { ArrowLeft, FileText, User, MapPin, Building, Calendar, Download } from 'lucide-react';
 import { Layout } from '../components/Layout';
+import { ImagePreview } from '../components/ImagePreview';
 import { useDocument } from '../hooks/useDocuments';
 import { useFileDownload } from '../hooks/useStorage';
 import type { EntityType } from '../lib/types';
@@ -143,6 +144,19 @@ export default function DocumentDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Document Preview */}
+            {document.imageUrl && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Document Preview</h2>
+                <ImagePreview
+                  src={document.imageUrl}
+                  alt={`Preview of ${document.fileName}`}
+                  className=""
+                  containerClassName="w-full h-96 border border-gray-200 rounded-lg"
+                />
+              </div>
+            )}
+
             {/* Document Content */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Content</h2>
