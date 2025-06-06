@@ -62,7 +62,12 @@ export class StorageService {
     limit: number;
   }> {
     try {
-      const targetFolderId = folderId || this.defaultFolderId;
+      // Validate and set target folder ID
+      let targetFolderId = folderId;
+      if (!targetFolderId || targetFolderId.trim() === '' || targetFolderId === 'undefined' || targetFolderId === 'null') {
+        targetFolderId = this.defaultFolderId;
+      }
+      
       const cacheKey = `dir_content_${targetFolderId}_${page}_${limit}`;
 
       // Check cache first
@@ -81,7 +86,7 @@ export class StorageService {
       const allFilesResponse = await this.drive.files.list({
         q: query,
         fields: 'files(id, name, mimeType, size, modifiedTime, createdTime)',
-        pageSize: 1000, // Max allowed by Google Drive API
+        pageSize: 100, // Reduce from 1000 to be consistent and avoid potential issues
         orderBy: 'name',
       });
 
@@ -122,8 +127,9 @@ export class StorageService {
       return result;
 
     } catch (error) {
-      logger.error(`Failed to get directory content:`, error);
-      throw new AppError(`Failed to get directory content: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      logger.error(`Failed to get directory content for folder "${folderId}":`, error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new AppError(`Failed to get directory content: ${errorMessage}`);
     }
   }
 
@@ -235,20 +241,27 @@ export class StorageService {
     limit: number;
   }> {
     try {
-      logger.info(`Searching files with query: ${query}, page ${page}, limit ${limit}`);
+      logger.info(`Searching files with query: "${query}", folderId: "${folderId}", page: ${page}, limit: ${limit}`);
 
-      let searchQuery = `name contains '${query}' and trashed = false`;
+      // Escape special characters in search query
+      const escapedQuery = query.replace(/'/g, "\\'").replace(/"/g, '\\"');
       
-      if (folderId) {
+      let searchQuery = `name contains '${escapedQuery}' and trashed = false`;
+      
+      // Only add parent folder condition if folderId is provided and not empty
+      if (folderId && folderId.trim() !== '' && folderId !== 'undefined' && folderId !== 'null') {
         searchQuery += ` and '${folderId}' in parents`;
+        logger.info(`Adding folder filter: ${folderId}`);
       }
+
+      logger.info(`Final search query: ${searchQuery}`);
 
       // Fetch all matching files to get accurate total count
       const allFilesResponse = await this.drive.files.list({
         q: searchQuery,
         fields: 'files(id, name, mimeType, size, modifiedTime, createdTime)',
-        pageSize: 1000, // Max allowed by Google Drive API
-        orderBy: 'relevance',
+        pageSize: 100, // Reduce from 1000 to avoid potential issues
+        orderBy: 'name',
       });
 
       const allFiles = allFilesResponse.data.files || [];
@@ -281,12 +294,15 @@ export class StorageService {
         limit
       };
 
-      logger.info(`Found ${paginatedFiles.length} files matching query: ${query} (page ${page}/${Math.ceil(supportedFiles.length / limit)})`);
+      logger.info(`Found ${paginatedFiles.length} files matching query: "${query}" (page ${page}/${Math.ceil(supportedFiles.length / limit)})`);
       return result;
 
     } catch (error) {
-      logger.error(`Failed to search files:`, error);
-      throw new AppError(`Failed to search files: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      logger.error(`Failed to search files with query "${query}":`, error);
+      
+      // Provide more specific error information
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new AppError(`Failed to search files: ${errorMessage}`);
     }
   }
 

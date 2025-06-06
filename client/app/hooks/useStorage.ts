@@ -1,113 +1,63 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { storageApi } from '../api/storage';
 import { sanitizeFilename } from '../lib/utils';
 import type { FileListItem, FileMetadata, StorageInfo } from '../lib/types';
 
-export function useStorage() {
-  const [files, setFiles] = useState<FileListItem[]>([]);
-  const [total, setTotal] = useState<number | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+// Query Keys
+export const storageKeys = {
+  all: ['storage'] as const,
+  files: () => [...storageKeys.all, 'files'] as const,
+  filesList: (folderId?: string, page?: number, limit?: number) => 
+    [...storageKeys.files(), { folderId, page, limit }] as const,
+  search: (query: string, folderId?: string, page?: number, limit?: number) => 
+    [...storageKeys.all, 'search', { query, folderId, page, limit }] as const,
+  metadata: () => [...storageKeys.all, 'metadata'] as const,
+  fileMetadata: (fileId: string) => [...storageKeys.metadata(), fileId] as const,
+  info: () => [...storageKeys.all, 'info'] as const,
+};
 
-  const getFiles = async (folderId?: string, page: number = 1, limit: number = 20) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await storageApi.getFiles(folderId, page, limit);
-      setFiles(data.files);
-      setTotal(data.total);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch files');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const searchFiles = async (query: string, folderId?: string, page: number = 1, limit: number = 20) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await storageApi.searchFiles(query, folderId, page, limit);
-      setFiles(data.files);
-      setTotal(data.total);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to search files');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return {
-    files,
-    total,
-    loading,
-    error,
-    getFiles,
-    searchFiles,
-    refetch: () => getFiles(),
-  };
+// Storage Files Hook
+export function useStorage(folderId?: string, page: number = 1, limit: number = 20) {
+  return useQuery({
+    queryKey: storageKeys.filesList(folderId, page, limit),
+    queryFn: () => storageApi.getFiles(folderId, page, limit),
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
 }
 
+// Storage Search Hook
+export function useStorageSearch(query: string, folderId?: string, page: number = 1, limit: number = 20) {
+  return useQuery({
+    queryKey: storageKeys.search(query, folderId, page, limit),
+    queryFn: () => storageApi.searchFiles(query, folderId, page, limit),
+    enabled: query.trim().length >= 2,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
+}
+
+// File Metadata Hook
 export function useFileMetadata(fileId?: string) {
-  const [metadata, setMetadata] = useState<FileMetadata | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!fileId) return;
-
-    const fetchMetadata = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await storageApi.getFileMetadata(fileId);
-        setMetadata(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch metadata');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMetadata();
-  }, [fileId]);
-
-  return { metadata, loading, error };
+  return useQuery({
+    queryKey: storageKeys.fileMetadata(fileId!),
+    queryFn: () => storageApi.getFileMetadata(fileId!),
+    enabled: !!fileId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 }
 
+// Storage Info Hook
 export function useStorageInfo() {
-  const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchStorageInfo = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await storageApi.getStorageInfo();
-        setStorageInfo(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch storage info');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStorageInfo();
-  }, []);
-
-  return { storageInfo, loading, error };
+  return useQuery({
+    queryKey: storageKeys.info(),
+    queryFn: () => storageApi.getStorageInfo(),
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
 }
 
+// File Download Hook (Mutation)
 export function useFileDownload() {
-  const [downloading, setDownloading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const downloadFile = async (fileId: string, fileName: string) => {
-    setDownloading(true);
-    setError(null);
-    try {
+  return useMutation({
+    mutationFn: async ({ fileId, fileName }: { fileId: string; fileName: string }) => {
       const blob = await storageApi.downloadFile(fileId);
       
       // Create download link with sanitized filename
@@ -119,12 +69,16 @@ export function useFileDownload() {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to download file');
-    } finally {
-      setDownloading(false);
-    }
-  };
+    },
+  });
+}
 
-  return { downloadFile, downloading, error };
+// Storage Connection Test Hook
+export function useStorageTest() {
+  return useQuery({
+    queryKey: [...storageKeys.all, 'test'],
+    queryFn: () => storageApi.testConnection(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1,
+  });
 } 

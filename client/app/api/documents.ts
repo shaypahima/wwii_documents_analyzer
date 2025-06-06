@@ -12,13 +12,44 @@ export interface DocumentFilters {
   endDate?: string;
 }
 
+// Backend response structure for documents
+interface DocumentsBackendResponse {
+  documents: Document[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// Backend response structure for search
+interface SearchBackendResponse {
+  data: Document[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 export const documentsApi = {
   // Get all documents with filters and pagination
   async getDocuments(filters: DocumentFilters = {}): Promise<SearchResult> {
     console.log('getDocuments', filters); 
-    const response = await api.get<ApiResponse<SearchResult>>('/documents', { params: filters });
+    const response = await api.get<ApiResponse<DocumentsBackendResponse>>('/documents', { params: filters });
     console.log('getDocuments response', response.data);
-    return response.data.data || response.data;
+    
+    const backendData = response.data.data || response.data;
+    
+    // Convert backend response to SearchResult format
+    return {
+      documents: backendData.documents || [],
+      total: backendData.pagination?.total || 0,
+      page: backendData.pagination?.page || 1,
+      limit: backendData.pagination?.limit || 10
+    };
   },
 
   // Get document by ID
@@ -33,9 +64,18 @@ export const documentsApi = {
   async searchDocuments(query: string, page = 1, limit = 20): Promise<SearchResult> {
     console.log('searchDocuments', query, page, limit); 
     const params = { q: query, page, limit };
-    const response = await api.get<ApiResponse<SearchResult>>('/documents/search', { params });
+    const response = await api.get<ApiResponse<SearchBackendResponse>>('/documents/search', { params });
     console.log('searchDocuments response', response.data);
-    return response.data.data;
+    
+    const backendData = response.data.data || response.data;
+    
+    // Convert backend response to SearchResult format
+    return {
+      documents: backendData.data || [],
+      total: backendData.pagination?.total || 0,
+      page: backendData.pagination?.page || page,
+      limit: backendData.pagination?.limit || limit
+    };
   },
 
   // Get document statistics
@@ -50,9 +90,18 @@ export const documentsApi = {
   async getDocumentsByEntity(entityId: string, page = 1, limit = 20): Promise<SearchResult> {
     console.log('getDocumentsByEntity', entityId, page, limit); 
     const params = { page, limit };
-    const response = await api.get<ApiResponse<SearchResult>>(`/documents/entity/${entityId}`, { params });
+    const response = await api.get<ApiResponse<SearchBackendResponse>>(`/documents/entity/${entityId}`, { params });
     console.log('getDocumentsByEntity response', response.data);
-    return response.data.data;
+    
+    const backendData = response.data.data || response.data;
+    
+    // Convert backend response to SearchResult format
+    return {
+      documents: backendData.data || [],
+      total: backendData.pagination?.total || 0,
+      page: backendData.pagination?.page || page,
+      limit: backendData.pagination?.limit || limit
+    };
   },
 
   // Analyze document from Google Drive (without saving)

@@ -142,6 +142,11 @@ router.get('/search', async (req: Request, res: Response): Promise<void> => {
       throw new AppError('Search query must be at least 2 characters', HttpStatusCode.BAD_REQUEST);
     }
 
+    // Validate folder ID if provided
+    if (folderId && typeof folderId !== 'string') {
+      throw new AppError('Invalid folder ID format', HttpStatusCode.BAD_REQUEST);
+    }
+
     // Validate pagination parameters
     if (pageNum < 1) {
       throw new AppError('Page must be greater than 0', HttpStatusCode.BAD_REQUEST);
@@ -151,7 +156,10 @@ router.get('/search', async (req: Request, res: Response): Promise<void> => {
       throw new AppError('Limit must be between 1 and 100', HttpStatusCode.BAD_REQUEST);
     }
 
-    const result = await storageService.searchFiles(query.trim(), folderId as string, pageNum, limitNum);
+    // Clean up folder ID - convert undefined/null strings to undefined
+    const cleanFolderId = folderId && folderId !== 'undefined' && folderId !== 'null' ? folderId as string : undefined;
+
+    const result = await storageService.searchFiles(query.trim(), cleanFolderId, pageNum, limitNum);
 
     res.status(HttpStatusCode.OK).json({
       success: true,

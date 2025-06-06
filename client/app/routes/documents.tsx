@@ -17,21 +17,28 @@ export default function Documents() {
     limit: 12
   });
 
-  const { documents, total, loading, fetchDocuments } = useDocuments();
-  const { results, loading: searching, searchDocuments } = useDocumentSearch();
+  // Use React Query hooks
+  const documentsQuery = useDocuments({
+    ...filters,
+    page: currentPage,
+  });
+
+  const searchQuery_enabled = isSearching && searchQuery.trim().length >= 2;
+  const searchResults = useDocumentSearch(
+    searchQuery, 
+    currentPage, 
+    filters.limit
+  );
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.trim()) {
       setIsSearching(true);
       setCurrentPage(1);
-      await searchDocuments(query, 1, filters.limit);
     } else {
       setIsSearching(false);
       setCurrentPage(1);
-      const newFilters = { ...filters, page: 1 };
-      setFilters(newFilters);
-      fetchDocuments(newFilters);
+      setFilters(prev => ({ ...prev, page: 1 }));
     }
   };
 
@@ -39,33 +46,19 @@ export default function Documents() {
     const newFilters = { ...filters, [key]: value, page: 1 };
     setFilters(newFilters);
     setCurrentPage(1);
-    
-    if (isSearching && searchQuery) {
-      // If we're currently searching, apply filters to search results
-      searchDocuments(searchQuery, 1, newFilters.limit);
-    } else {
-      fetchDocuments(newFilters);
-    }
   };
 
   const handlePageChange = async (page: number) => {
     setCurrentPage(page);
-    
-    if (isSearching && searchQuery) {
-      await searchDocuments(searchQuery, page, filters.limit);
-    } else {
-      const newFilters = { ...filters, page };
-      setFilters(newFilters);
-      fetchDocuments(newFilters);
-    }
   };
 
-  console.log(documents, 'documents');
-  console.log(results, 'search results');
-  
-  const displayDocuments = isSearching ? (results?.documents || []) : (documents || []);
-  const displayTotal = isSearching ? (results?.total || 0) : total;
+  // Determine which data to display
+  const activeQuery = isSearching && searchQuery_enabled ? searchResults : documentsQuery;
+  const displayDocuments = activeQuery.data?.documents || [];
+  const displayTotal = activeQuery.data?.total || 0;
   const totalPages = Math.ceil(displayTotal / filters.limit);
+  const loading = activeQuery.isLoading;
+  const error = activeQuery.error;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
@@ -213,8 +206,22 @@ export default function Documents() {
           </div>
         )}
 
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex">
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Error</h3>
+                <div className="mt-2 text-sm text-red-700">
+                  {error instanceof Error ? error.message : 'An error occurred'}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Documents Grid */}
-        {loading || searching ? (
+        {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <span className="ml-2 text-gray-600">Loading documents...</span>
