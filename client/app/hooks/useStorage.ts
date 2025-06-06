@@ -5,15 +5,17 @@ import type { FileListItem, FileMetadata, StorageInfo } from '../lib/types';
 
 export function useStorage() {
   const [files, setFiles] = useState<FileListItem[]>([]);
+  const [total, setTotal] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getFiles = async (folderId?: string) => {
+  const getFiles = async (folderId?: string, page: number = 1, limit: number = 20) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await storageApi.getFiles(folderId);
-      setFiles(data);
+      const data = await storageApi.getFiles(folderId, page, limit);
+      setFiles(data.files);
+      setTotal(data.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch files');
     } finally {
@@ -21,13 +23,13 @@ export function useStorage() {
     }
   };
 
-  const searchFiles = async (query: string, folderId?: string) => {
+  const searchFiles = async (query: string, folderId?: string, page: number = 1, limit: number = 20) => {
     setLoading(true);
     setError(null);
     try {
-      
-      const data = await storageApi.searchFiles(query, folderId);
-      setFiles(data);
+      const data = await storageApi.searchFiles(query, folderId, page, limit);
+      setFiles(data.files);
+      setTotal(data.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to search files');
     } finally {
@@ -37,6 +39,7 @@ export function useStorage() {
 
   return {
     files,
+    total,
     loading,
     error,
     getFiles,

@@ -1,17 +1,36 @@
 import { api } from '../lib/api';
 import type { ApiResponse, FileListItem, FileMetadata, StorageInfo } from '../lib/types';
 
+export interface StorageFilesResponse {
+  files: FileListItem[];
+  total?: number;
+  page?: number;
+  limit?: number;
+}
+
 export const storageApi = {
   // Get directory content from Google Drive
-  async getFiles(folderId?: string): Promise<FileListItem[]> {
-    const params = folderId ? { folderId } : {};
+  async getFiles(folderId?: string, page: number = 1, limit: number = 20): Promise<StorageFilesResponse> {
+    const params: any = { page, limit };
+    if (folderId) params.folderId = folderId;
+    
     const response = await api.get<ApiResponse<FileListItem[]>>('/storage/files', { params });
     
     if (!response.data.success) {
       throw new Error('Failed to fetch files from storage');
     }
     
-    return response.data.data;
+    // Handle both paginated and non-paginated responses
+    if (Array.isArray(response.data.data)) {
+      return {
+        files: response.data.data,
+        total: response.data.data.length,
+        page,
+        limit
+      };
+    } else {
+      return response.data.data as StorageFilesResponse;
+    }
   },
 
   // Get file metadata
@@ -34,15 +53,27 @@ export const storageApi = {
   },
 
   // Search files in Google Drive
-  async searchFiles(query: string, folderId?: string): Promise<FileListItem[]> {
-    const params = { q: query, ...(folderId && { folderId }) };
+  async searchFiles(query: string, folderId?: string, page: number = 1, limit: number = 20): Promise<StorageFilesResponse> {
+    const params: any = { q: query, page, limit };
+    if (folderId) params.folderId = folderId;
+    
     const response = await api.get<ApiResponse<FileListItem[]>>('/storage/search', { params });
     
     if (!response.data.success) {
       throw new Error('Failed to search files in storage');
     }
     
-    return response.data.data;
+    // Handle both paginated and non-paginated responses
+    if (Array.isArray(response.data.data)) {
+      return {
+        files: response.data.data,
+        total: response.data.data.length,
+        page,
+        limit
+      };
+    } else {
+      return response.data.data as StorageFilesResponse;
+    }
   },
 
   // Get storage information

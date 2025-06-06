@@ -55,32 +55,39 @@ export class StorageService {
   /**
    * Get directory content from Google Drive
    */
-  async getDirectoryContent(folderId?: string): Promise<FileListItem[]> {
+  async getDirectoryContent(folderId?: string, page: number = 1, limit: number = 20): Promise<{
+    files: FileListItem[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     try {
       const targetFolderId = folderId || this.defaultFolderId;
-      const cacheKey = `dir_content_${targetFolderId}`;
+      const cacheKey = `dir_content_${targetFolderId}_${page}_${limit}`;
 
       // Check cache first
-      const cachedResult: Nullable<FileListItem[]> = this.cacheService.get(cacheKey);
+      const cachedResult = this.cacheService.get(cacheKey);
       if (cachedResult) {
-        logger.info(`Returning cached directory content for folder ${targetFolderId}`);
-        return cachedResult;
+        logger.info(`Returning cached directory content for folder ${targetFolderId}, page ${page}`);
+        return cachedResult as any;
       }
 
-      logger.info(`Fetching directory content for folder ${targetFolderId}`);
+      logger.info(`Fetching directory content for folder ${targetFolderId}, page ${page}, limit ${limit}`);
 
       const query = `'${targetFolderId}' in parents and trashed = false`;
       
-      const response = await this.drive.files.list({
+      // For pagination, we'll fetch all files first to get accurate total count
+      // This is a limitation of Google Drive API - it doesn't provide total count directly
+      const allFilesResponse = await this.drive.files.list({
         q: query,
-        fields: 'nextPageToken, files(id, name, mimeType, size, modifiedTime, createdTime)',
-        pageSize: 100,
+        fields: 'files(id, name, mimeType, size, modifiedTime, createdTime)',
+        pageSize: 1000, // Max allowed by Google Drive API
         orderBy: 'name',
       });
 
-      const files = response.data.files || [];
+      const allFiles = allFilesResponse.data.files || [];
       
-      const processedFiles: FileListItem[] = files.map((file: any) => ({
+      const processedFiles: FileListItem[] = allFiles.map((file: any) => ({
         id: file.id,
         name: file.name,
         mimeType: file.mimeType,
@@ -96,11 +103,23 @@ export class StorageService {
         file.isFolder || this.isSupportedFileType(file.type)
       );
 
-      // Cache the result for 5 minutes
-      this.cacheService.set(cacheKey, supportedFiles, 300);
+      // Apply pagination
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedFiles = supportedFiles.slice(startIndex, endIndex);
 
-      logger.info(`Retrieved ${supportedFiles.length} files from folder ${targetFolderId}`);
-      return supportedFiles;
+      const result = {
+        files: paginatedFiles,
+        total: supportedFiles.length,
+        page,
+        limit
+      };
+
+      // Cache the result for 5 minutes
+      this.cacheService.set(cacheKey, result, 300);
+
+      logger.info(`Retrieved ${paginatedFiles.length} files from folder ${targetFolderId} (page ${page}/${Math.ceil(supportedFiles.length / limit)})`);
+      return result;
 
     } catch (error) {
       logger.error(`Failed to get directory content:`, error);
@@ -209,9 +228,14 @@ export class StorageService {
   /**
    * Search files in Google Drive
    */
-  async searchFiles(query: string, folderId?: string): Promise<FileListItem[]> {
+  async searchFiles(query: string, folderId?: string, page: number = 1, limit: number = 20): Promise<{
+    files: FileListItem[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     try {
-      logger.info(`Searching files with query: ${query}`);
+      logger.info(`Searching files with query: ${query}, page ${page}, limit ${limit}`);
 
       let searchQuery = `name contains '${query}' and trashed = false`;
       
@@ -219,16 +243,17 @@ export class StorageService {
         searchQuery += ` and '${folderId}' in parents`;
       }
 
-      const response = await this.drive.files.list({
+      // Fetch all matching files to get accurate total count
+      const allFilesResponse = await this.drive.files.list({
         q: searchQuery,
         fields: 'files(id, name, mimeType, size, modifiedTime, createdTime)',
-        pageSize: 50,
+        pageSize: 1000, // Max allowed by Google Drive API
         orderBy: 'relevance',
       });
 
-      const files = response.data.files || [];
+      const allFiles = allFilesResponse.data.files || [];
       
-      const processedFiles: FileListItem[] = files.map((file: any) => ({
+      const processedFiles: FileListItem[] = allFiles.map((file: any) => ({
         id: file.id,
         name: file.name,
         mimeType: file.mimeType,
@@ -244,8 +269,20 @@ export class StorageService {
         file.isFolder || this.isSupportedFileType(file.type)
       );
 
-      logger.info(`Found ${supportedFiles.length} files matching query: ${query}`);
-      return supportedFiles;
+      // Apply pagination
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedFiles = supportedFiles.slice(startIndex, endIndex);
+
+      const result = {
+        files: paginatedFiles,
+        total: supportedFiles.length,
+        page,
+        limit
+      };
+
+      logger.info(`Found ${paginatedFiles.length} files matching query: ${query} (page ${page}/${Math.ceil(supportedFiles.length / limit)})`);
+      return result;
 
     } catch (error) {
       logger.error(`Failed to search files:`, error);

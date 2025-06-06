@@ -1,38 +1,71 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { FileText, User, MapPin, Building, Calendar, Filter } from 'lucide-react';
+import { FileText, User, MapPin, Building, Calendar, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { SearchBar } from '../components/SearchBar';
 import { useDocuments, useDocumentSearch } from '../hooks/useDocuments';
 import type { Document, DocumentType, EntityType } from '../lib/types';
 
 export default function Documents() {
-  const { documents, total, loading, fetchDocuments } = useDocuments();
-  const { results, loading: searching, searchDocuments } = useDocumentSearch();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [filters, setFilters] = useState({
     documentType: '',
-    sortBy: 'createdAt'
+    sortBy: 'createdAt',
+    page: 1,
+    limit: 12
   });
 
+  const { documents, total, loading, fetchDocuments } = useDocuments();
+  const { results, loading: searching, searchDocuments } = useDocumentSearch();
+
   const handleSearch = async (query: string) => {
+    setSearchQuery(query);
     if (query.trim()) {
       setIsSearching(true);
-      await searchDocuments(query);
+      setCurrentPage(1);
+      await searchDocuments(query, 1, filters.limit);
     } else {
       setIsSearching(false);
-      fetchDocuments();
+      setCurrentPage(1);
+      const newFilters = { ...filters, page: 1 };
+      setFilters(newFilters);
+      fetchDocuments(newFilters);
     }
   };
 
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...filters, [key]: value };
+    const newFilters = { ...filters, [key]: value, page: 1 };
     setFilters(newFilters);
-    fetchDocuments(newFilters);
+    setCurrentPage(1);
+    
+    if (isSearching && searchQuery) {
+      // If we're currently searching, apply filters to search results
+      searchDocuments(searchQuery, 1, newFilters.limit);
+    } else {
+      fetchDocuments(newFilters);
+    }
   };
+
+  const handlePageChange = async (page: number) => {
+    setCurrentPage(page);
+    
+    if (isSearching && searchQuery) {
+      await searchDocuments(searchQuery, page, filters.limit);
+    } else {
+      const newFilters = { ...filters, page };
+      setFilters(newFilters);
+      fetchDocuments(newFilters);
+    }
+  };
+
   console.log(documents, 'documents');
+  console.log(results, 'search results');
+  
   const displayDocuments = isSearching ? (results?.documents || []) : (documents || []);
   const displayTotal = isSearching ? (results?.total || 0) : total;
+  const totalPages = Math.ceil(displayTotal / filters.limit);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
@@ -86,6 +119,11 @@ export default function Documents() {
             <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
             <p className="text-gray-600">
               {displayTotal} document{displayTotal !== 1 ? 's' : ''} in your archive
+              {totalPages > 1 && (
+                <span className="ml-2 text-sm">
+                  (Page {currentPage} of {totalPages})
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -135,6 +173,24 @@ export default function Documents() {
                 </svg>
               </div>
             </div>
+
+            <div className="relative">
+              <select
+                value={filters.limit}
+                onChange={(e) => handleFilterChange('limit', e.target.value)}
+                className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm text-gray-900 font-medium shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer min-w-[100px]"
+              >
+                <option value={6} className="text-gray-900">6 per page</option>
+                <option value={12} className="text-gray-900">12 per page</option>
+                <option value={24} className="text-gray-900">24 per page</option>
+                <option value={48} className="text-gray-900">48 per page</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -149,7 +205,7 @@ export default function Documents() {
               </div>
               <div className="ml-3">
                 <p className="text-sm text-blue-700">
-                  Showing search results ({displayTotal} found). 
+                  Showing search results for "{searchQuery}" ({displayTotal} found). 
                   <button onClick={() => handleSearch('')} className="underline ml-1">Clear search</button>
                 </p>
               </div>
@@ -179,58 +235,147 @@ export default function Documents() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayDocuments.map((document) => (
-              <Link
-                key={document.id}
-                to={`/documents/${document.id}`}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200 p-6 block"
-              >
-                <div className="space-y-3">
-                  {/* Document Header */}
-                  <div className="flex items-start justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900 truncate">
-                      {document.title}
-                    </h3>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize ml-2 flex-shrink-0">
-                      {document.documentType.replace('_', ' ')}
-                    </span>
-                  </div>
-
-                  {/* Content Preview */}
-                  <p className="text-sm text-gray-600 line-clamp-3">
-                    {document.content}
-                  </p>
-
-                  {/* Entities */}
-                  {document.entities && document.entities.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {document.entities.slice(0, 3).map((entity, index) => (
-                        <span
-                          key={index}
-                          className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${getEntityColor(entity.type)}`}
-                        >
-                          {getEntityIcon(entity.type)}
-                          <span className="ml-1 truncate max-w-20">{entity.name}</span>
-                        </span>
-                      ))}
-                      {document.entities.length > 3 && (
-                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                          +{document.entities.length - 3} more
-                        </span>
-                      )}
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayDocuments.map((document) => (
+                <Link
+                  key={document.id}
+                  to={`/documents/${document.id}`}
+                  className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200 p-6 block"
+                >
+                  <div className="space-y-3">
+                    {/* Document Header */}
+                    <div className="flex items-start justify-between">
+                      <h3 className="text-lg font-semibold text-gray-900 truncate">
+                        {document.title}
+                      </h3>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize ml-2 flex-shrink-0">
+                        {document.documentType.replace('_', ' ')}
+                      </span>
                     </div>
-                  )}
 
-                  {/* Metadata */}
-                  <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
-                    <span>{formatDate(document.createdAt)}</span>
-                    <span>{document.fileName}</span>
+                    {/* Content Preview */}
+                    <p className="text-sm text-gray-600 line-clamp-3">
+                      {document.content}
+                    </p>
+
+                    {/* Entities */}
+                    {document.entities && document.entities.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {document.entities.slice(0, 3).map((entity, index) => (
+                          <span
+                            key={index}
+                            className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${getEntityColor(entity.type)}`}
+                          >
+                            {getEntityIcon(entity.type)}
+                            <span className="ml-1 truncate max-w-20">{entity.name}</span>
+                          </span>
+                        ))}
+                        {document.entities.length > 3 && (
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                            +{document.entities.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Metadata */}
+                    <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
+                      <span>{formatDate(document.createdAt)}</span>
+                      <span>{document.fileName}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+                <div className="flex flex-1 justify-between sm:hidden">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing{' '}
+                      <span className="font-medium">{((currentPage - 1) * filters.limit) + 1}</span>{' '}
+                      to{' '}
+                      <span className="font-medium">
+                        {Math.min(currentPage * filters.limit, displayTotal)}
+                      </span>{' '}
+                      of{' '}
+                      <span className="font-medium">{displayTotal}</span>{' '}
+                      results
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="sr-only">Previous</span>
+                        <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                      
+                      {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                        let pageNumber;
+                        if (totalPages <= 7) {
+                          pageNumber = i + 1;
+                        } else if (currentPage <= 4) {
+                          pageNumber = i + 1;
+                        } else if (currentPage >= totalPages - 3) {
+                          pageNumber = totalPages - 6 + i;
+                        } else {
+                          pageNumber = currentPage - 3 + i;
+                        }
+                        
+                        if (pageNumber < 1 || pageNumber > totalPages) return null;
+                        
+                        return (
+                          <button
+                            key={pageNumber}
+                            onClick={() => handlePageChange(pageNumber)}
+                            className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                              pageNumber === currentPage
+                                ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                                : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                            }`}
+                          >
+                            {pageNumber}
+                          </button>
+                        );
+                      })}
+                      
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="sr-only">Next</span>
+                        <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                    </nav>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </Layout>

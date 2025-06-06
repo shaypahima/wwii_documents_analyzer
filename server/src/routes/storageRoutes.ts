@@ -33,17 +33,28 @@ const handleError = (res: Response, error: unknown, defaultMessage: string): voi
  * @route   GET /api/storage/files
  * @desc    Get directory content from Google Drive
  * @access  Public
- * @query   folderId - Optional folder ID
+ * @query   folderId - Optional folder ID, page - Page number, limit - Items per page
  */
 router.get('/files', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { folderId } = req.query;
+    const { folderId, page, limit } = req.query;
+    const pageNum = page ? parseInt(page as string, 10) : 1;
+    const limitNum = limit ? parseInt(limit as string, 10) : 20;
 
-    const files = await storageService.getDirectoryContent(folderId as string);
+    // Validate pagination parameters
+    if (pageNum < 1) {
+      throw new AppError('Page must be greater than 0', HttpStatusCode.BAD_REQUEST);
+    }
+
+    if (limitNum < 1 || limitNum > 100) {
+      throw new AppError('Limit must be between 1 and 100', HttpStatusCode.BAD_REQUEST);
+    }
+
+    const result = await storageService.getDirectoryContent(folderId as string, pageNum, limitNum);
 
     res.status(HttpStatusCode.OK).json({
       success: true,
-      data: files,
+      data: result,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
@@ -115,11 +126,13 @@ router.get('/files/:fileId/content', async (req: Request, res: Response): Promis
  * @route   GET /api/storage/search
  * @desc    Search files in Google Drive
  * @access  Public
- * @query   q - Search query, folderId - Optional folder ID
+ * @query   q - Search query, folderId - Optional folder ID, page - Page number, limit - Items per page
  */
 router.get('/search', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { q: query, folderId } = req.query;
+    const { q: query, folderId, page, limit } = req.query;
+    const pageNum = page ? parseInt(page as string, 10) : 1;
+    const limitNum = limit ? parseInt(limit as string, 10) : 20;
 
     if (!query || typeof query !== 'string') {
       throw new AppError('Search query is required', HttpStatusCode.BAD_REQUEST);
@@ -129,11 +142,20 @@ router.get('/search', async (req: Request, res: Response): Promise<void> => {
       throw new AppError('Search query must be at least 2 characters', HttpStatusCode.BAD_REQUEST);
     }
 
-    const files = await storageService.searchFiles(query.trim(), folderId as string);
+    // Validate pagination parameters
+    if (pageNum < 1) {
+      throw new AppError('Page must be greater than 0', HttpStatusCode.BAD_REQUEST);
+    }
+
+    if (limitNum < 1 || limitNum > 100) {
+      throw new AppError('Limit must be between 1 and 100', HttpStatusCode.BAD_REQUEST);
+    }
+
+    const result = await storageService.searchFiles(query.trim(), folderId as string, pageNum, limitNum);
 
     res.status(HttpStatusCode.OK).json({
       success: true,
-      data: files,
+      data: result,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
