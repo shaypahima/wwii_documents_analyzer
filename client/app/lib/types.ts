@@ -41,6 +41,9 @@ export interface Entity {
   type: EntityType;
   date?: string;
   documents?: Document[];
+  _count?: {
+    documents: number;
+  };
 }
 
 export interface DocumentStats {
@@ -51,6 +54,13 @@ export interface DocumentStats {
 
 export interface SearchResult {
   documents: Document[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface EntitySearchResult {
+  entities: Entity[];
   total: number;
   page: number;
   limit: number;

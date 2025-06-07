@@ -20,11 +20,11 @@ export default function Home() {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Historical Document Archive
+            Museum of the Jewish Warrior in WWII
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Analyze and organize historical documents with AI-powered insights. 
-            Browse your Google Drive files, extract entities, and build a searchable archive.
+            Preserving the legacy of Jewish resistance and heroism during World War II. 
+            Digitize and analyze historical documents, testimonies, and artifacts with AI-powered insights.
           </p>
         </div>
 

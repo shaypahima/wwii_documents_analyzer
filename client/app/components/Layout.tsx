@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router';
-import { HardDrive, FileText, Search, Home } from 'lucide-react';
+import { HardDrive, FileText, Search, Home, Users } from 'lucide-react';
 import { ErrorBoundary } from './ErrorBoundary';
 
 interface LayoutProps {
@@ -13,6 +13,7 @@ export function Layout({ children }: LayoutProps) {
     { name: 'Home', href: '/', icon: Home },
     { name: 'Drive', href: '/drive', icon: HardDrive },
     { name: 'Documents', href: '/documents', icon: FileText },
+    { name: 'Entities', href: '/entities', icon: Users },
   ];
 
   return (

@@ -5,5 +5,7 @@ export default [
   route("drive", "routes/drive.tsx"),
   route("documents", "routes/documents.tsx"),
   route("documents/:id", "routes/document-detail.tsx"),
+  route("entities", "routes/entities.tsx"),
+  route("entities/:id", "routes/entity-detail.tsx"),
   route("analyze", "routes/analyze.tsx"),
 ] satisfies RouteConfig;

@@ -90,17 +90,31 @@ export const documentsApi = {
   async getDocumentsByEntity(entityId: string, page = 1, limit = 20): Promise<SearchResult> {
     console.log('getDocumentsByEntity', entityId, page, limit); 
     const params = { page, limit };
-    const response = await api.get<ApiResponse<SearchBackendResponse>>(`/documents/entity/${entityId}`, { params });
-    console.log('getDocumentsByEntity response', response.data);
     
-    const backendData = response.data.data || response.data;
+    // Backend returns: { success: true, data: [documents], pagination: {...} }
+    interface EntityDocumentsResponse {
+      success: boolean;
+      data: Document[];
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+      timestamp: string;
+    }
+    
+    const response = await api.get<EntityDocumentsResponse>(`/documents/entity/${entityId}`, { params });
+    console.log('getDocumentsByEntity response', response.data);
+    console.log('getDocumentsByEntity documents count:', response.data.data?.length);
+    console.log('getDocumentsByEntity total:', response.data.pagination?.total);
     
     // Convert backend response to SearchResult format
     return {
-      documents: backendData.data || [],
-      total: backendData.pagination?.total || 0,
-      page: backendData.pagination?.page || page,
-      limit: backendData.pagination?.limit || limit
+      documents: response.data.data || [],
+      total: response.data.pagination?.total || 0,
+      page: response.data.pagination?.page || page,
+      limit: response.data.pagination?.limit || limit
     };
   },
 

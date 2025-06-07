@@ -103,7 +103,7 @@ export class EntityController {
       }
 
       const result = await this.entityService.getEntities(params);
-
+      console.log('result', result);
       res.status(HttpStatusCode.OK).json({
         success: true,
         data: result.entities,

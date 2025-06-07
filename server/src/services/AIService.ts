@@ -19,7 +19,7 @@ export class AIService {
 Given a document image, analyze it and provide a JSON response with the following structure:
 {
   "title": string, // A descriptive title for the document
-  "content": string, // Summary of the document content (2-3 sentences)
+  "content": string, // Summary of the document content (5-6 sentences)
   "document_type": "letter"|"report"|"photo"|"newspaper"|"list"|"diary_entry"|"book"|"map"|"biography",
   "entities": [{
     "name": string, // Entity name (e.g., "Winston Churchill", "London", "RAF")
