@@ -38,18 +38,21 @@ A powerful Node.js API server for scanning, analyzing, and managing WWII histori
 ## 🔧 Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd server
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Environment Setup**
    Create a `.env` file in the root directory:
+
    ```env
    # Server Configuration
    NODE_ENV=development
@@ -71,12 +74,14 @@ A powerful Node.js API server for scanning, analyzing, and managing WWII histori
    ```
 
 4. **Database Setup**
+
    ```bash
    npx prisma generate
    npx prisma db push
    ```
 
 5. **Build and Start**
+
    ```bash
    # Development
    npm run dev
@@ -89,12 +94,15 @@ A powerful Node.js API server for scanning, analyzing, and managing WWII histori
 ## 📖 API Documentation
 
 ### Base URL
+
 ```
 http://localhost:3000
 ```
 
 ### Response Format
+
 All API responses follow this structure:
+
 ```json
 {
   "success": true,
@@ -106,6 +114,7 @@ All API responses follow this structure:
 ```
 
 ### Error Response Format
+
 ```json
 {
   "success": false,
@@ -120,11 +129,13 @@ All API responses follow this structure:
 ## 📄 Document Endpoints
 
 ### Create Document
+
 ```http
 POST /api/documents
 ```
 
 **Request Body:**
+
 ```json
 {
   "title": "Document Title",
@@ -139,11 +150,13 @@ POST /api/documents
 ```
 
 ### Get All Documents
+
 ```http
 GET /api/documents
 ```
 
 **Query Parameters:**
+
 - `page` (number): Page number (default: 1)
 - `limit` (number): Items per page (default: 10, max: 100)
 - `documentType` (string): Filter by document type
@@ -153,16 +166,19 @@ GET /api/documents
 - `endDate` (string): Filter documents to date (YYYY-MM-DD)
 
 **Example:**
+
 ```http
 GET /api/documents?page=1&limit=20&documentType=REPORT&keyword=normandy
 ```
 
 ### Get Document by ID
+
 ```http
 GET /api/documents/:id
 ```
 
 ### Update Document
+
 ```http
 PUT /api/documents/:id
 ```
@@ -170,26 +186,31 @@ PUT /api/documents/:id
 **Request Body:** (Same as create, all fields optional)
 
 ### Delete Document
+
 ```http
 DELETE /api/documents/:id
 ```
 
 ### Search Documents
+
 ```http
 GET /api/documents/search
 ```
 
 **Query Parameters:**
+
 - `q` (string, required): Search query (minimum 2 characters)
 - `page` (number): Page number
 - `limit` (number): Items per page
 
 ### Get Document Statistics
+
 ```http
 GET /api/documents/stats
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -207,16 +228,19 @@ GET /api/documents/stats
 ```
 
 ### Get Documents by Entity
+
 ```http
 GET /api/documents/entity/:entityId
 ```
 
 ### Analyze Document (Without Saving)
+
 ```http
 POST /api/documents/analyze/:fileId
 ```
 
 **Request Body:**
+
 ```json
 {
   "forceRefresh": false,
@@ -225,11 +249,13 @@ POST /api/documents/analyze/:fileId
 ```
 
 ### Process and Save Document
+
 ```http
 POST /api/documents/process/:fileId
 ```
 
 **Request Body:**
+
 ```json
 {
   "forceRefresh": false
@@ -243,11 +269,13 @@ POST /api/documents/process/:fileId
 Entities represent people, locations, organizations, events, dates, and military units found in documents.
 
 ### Create Entity
+
 ```http
 POST /api/entities
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "General Dwight D. Eisenhower",
@@ -257,11 +285,13 @@ POST /api/entities
 ```
 
 ### Get All Entities
+
 ```http
 GET /api/entities
 ```
 
 **Query Parameters:**
+
 - `page` (number): Page number
 - `limit` (number): Items per page
 - `type` (string): Filter by entity type
@@ -269,39 +299,47 @@ GET /api/entities
 - `date` (string): Filter by date
 
 ### Get Entity by ID
+
 ```http
 GET /api/entities/:id
 ```
 
 **Query Parameters:**
+
 - `includeDocuments` (boolean): Include related documents in response
 
 ### Update Entity
+
 ```http
 PUT /api/entities/:id
 ```
 
 ### Delete Entity
+
 ```http
 DELETE /api/entities/:id
 ```
 
 ### Search Entities
+
 ```http
 GET /api/entities/search
 ```
 
 **Query Parameters:**
+
 - `q` (string, required): Search query
 - `page` (number): Page number
 - `limit` (number): Items per page
 
 ### Get Entity Statistics
+
 ```http
 GET /api/entities/stats
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -320,11 +358,13 @@ GET /api/entities/stats
 ```
 
 ### Find or Create Entity
+
 ```http
 POST /api/entities/find-or-create
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "Operation Overlord",
@@ -334,6 +374,7 @@ POST /api/entities/find-or-create
 ```
 
 ### Get Entities by Type
+
 ```http
 GET /api/entities/type/:type
 ```
@@ -347,19 +388,23 @@ GET /api/entities/type/:type
 Google Drive integration for file management.
 
 ### Get Directory Content
+
 ```http
 GET /api/storage/files
 ```
 
 **Query Parameters:**
+
 - `folderId` (string): Optional Google Drive folder ID
 
 ### Get File Metadata
+
 ```http
 GET /api/storage/files/:fileId
 ```
 
 ### Get File Content
+
 ```http
 GET /api/storage/files/:fileId/content
 ```
@@ -367,20 +412,24 @@ GET /api/storage/files/:fileId/content
 **Response:** Raw file content with appropriate headers
 
 ### Search Files
+
 ```http
 GET /api/storage/search
 ```
 
 **Query Parameters:**
+
 - `q` (string, required): Search query (minimum 2 characters)
 - `folderId` (string): Optional folder ID to search within
 
 ### Get Storage Information
+
 ```http
 GET /api/storage/info
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -393,6 +442,7 @@ GET /api/storage/info
 ```
 
 ### Test Storage Connection
+
 ```http
 GET /api/storage/health
 ```
@@ -402,11 +452,13 @@ GET /api/storage/health
 ## 🔍 System Endpoints
 
 ### Health Check
+
 ```http
 GET /health
 ```
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -418,11 +470,13 @@ GET /health
 ```
 
 ### API Information
+
 ```http
 GET /api
 ```
 
 **Response:**
+
 ```json
 {
   "name": "WWII Document Scanner API",
@@ -486,6 +540,7 @@ Currently, no rate limiting is implemented, but it's recommended for production 
 ## 📝 Logging
 
 The application uses Winston for logging with different levels:
+
 - `error` - Error messages
 - `warn` - Warning messages  
 - `info` - Informational messages
@@ -509,4 +564,4 @@ For support, please contact the development team or create an issue in the repos
 
 ---
 
-**Made with ❤️ for preserving WWII history** 
+**Made with ❤️ for preserving WWII history**

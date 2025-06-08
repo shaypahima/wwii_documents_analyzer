@@ -43,14 +43,18 @@ export class EntityRepository {
       const entity = await prisma.entity.findUnique({
         where: { id },
         include: {
-          documents: includeDocuments,
+          documents: includeDocuments ? {
+            include: {
+              entities: true
+            }
+          } : false,
           _count: {
             select: { documents: true },
           },
         },
       });
 
-      return entity as DatabaseEntity;
+      return entity;
     } catch (error) {
       logger.error(`Failed to find entity ${id}:`, error);
       throw new AppError('Failed to retrieve entity');

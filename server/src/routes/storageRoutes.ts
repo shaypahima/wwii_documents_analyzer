@@ -3,6 +3,7 @@ import { storageService } from '../services/StorageService';
 import { AppError, HttpStatusCode } from '../types/common';
 import { logger } from '../utils/logger';
 import { sanitizeFilename } from '../utils/helpers';
+import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = Router();
 
@@ -29,10 +30,13 @@ const handleError = (res: Response, error: unknown, defaultMessage: string): voi
   }
 };
 
+// Apply authentication middleware to all storage routes
+router.use(authenticateToken);
+
 /**
  * @route   GET /api/storage/files
  * @desc    Get directory content from Google Drive
- * @access  Public
+ * @access  Private (Authenticated users only)
  * @query   folderId - Optional folder ID, page - Page number, limit - Items per page
  */
 router.get('/files', async (req: Request, res: Response): Promise<void> => {
@@ -52,6 +56,9 @@ router.get('/files', async (req: Request, res: Response): Promise<void> => {
 
     const result = await storageService.getDirectoryContent(folderId as string, pageNum, limitNum);
 
+    // Log user activity
+    logger.info(`User ${req.user?.email} accessed directory: ${folderId || 'root'}`);
+
     res.status(HttpStatusCode.OK).json({
       success: true,
       data: result,
@@ -65,18 +72,21 @@ router.get('/files', async (req: Request, res: Response): Promise<void> => {
 /**
  * @route   GET /api/storage/files/:fileId
  * @desc    Get file metadata from Google Drive
- * @access  Public
+ * @access  Private (Authenticated users only)
  * @param   fileId - Google Drive file ID
  */
 router.get('/files/:fileId', async (req: Request, res: Response): Promise<void> => {
   try {
     const { fileId } = req.params;
-    console.log(fileId);
+    
     if (!fileId) {
       throw new AppError('File ID is required', HttpStatusCode.BAD_REQUEST);
     }
 
     const metadata = await storageService.getFileMetadata(fileId);
+
+    // Log user activity
+    logger.info(`User ${req.user?.email} accessed file metadata: ${fileId}`);
 
     res.status(HttpStatusCode.OK).json({
       success: true,
@@ -91,7 +101,7 @@ router.get('/files/:fileId', async (req: Request, res: Response): Promise<void> 
 /**
  * @route   GET /api/storage/files/:fileId/content
  * @desc    Get file content from Google Drive
- * @access  Public
+ * @access  Private (Authenticated users only)
  * @param   fileId - Google Drive file ID
  */
 router.get('/files/:fileId/content', async (req: Request, res: Response): Promise<void> => {
@@ -106,10 +116,14 @@ router.get('/files/:fileId/content', async (req: Request, res: Response): Promis
 
     // Sanitize filename for Content-Disposition header
     const sanitizedFilename = sanitizeFilename(file.name);
+    
     // Set appropriate headers
     res.setHeader('Content-Type', file.mimeType);
     res.setHeader('Content-Length', file.size);
     res.setHeader('Content-Disposition', `attachment; filename="${sanitizedFilename}"`);
+
+    // Log user activity
+    logger.info(`User ${req.user?.email} downloaded file: ${fileId} (${file.name})`);
 
     // Send file data
     if (file.data) {
@@ -125,7 +139,7 @@ router.get('/files/:fileId/content', async (req: Request, res: Response): Promis
 /**
  * @route   GET /api/storage/search
  * @desc    Search files in Google Drive
- * @access  Public
+ * @access  Private (Authenticated users only)
  * @query   q - Search query, folderId - Optional folder ID, page - Page number, limit - Items per page
  */
 router.get('/search', async (req: Request, res: Response): Promise<void> => {
@@ -161,6 +175,9 @@ router.get('/search', async (req: Request, res: Response): Promise<void> => {
 
     const result = await storageService.searchFiles(query.trim(), cleanFolderId, pageNum, limitNum);
 
+    // Log user activity
+    logger.info(`User ${req.user?.email} searched files: "${query.trim()}" in folder: ${cleanFolderId || 'all'}`);
+
     res.status(HttpStatusCode.OK).json({
       success: true,
       data: result,
@@ -174,11 +191,14 @@ router.get('/search', async (req: Request, res: Response): Promise<void> => {
 /**
  * @route   GET /api/storage/info
  * @desc    Get storage quota information
- * @access  Public
+ * @access  Private (Authenticated users only)
  */
 router.get('/info', async (req: Request, res: Response): Promise<void> => {
   try {
     const storageInfo = await storageService.getStorageInfo();
+
+    // Log user activity
+    logger.info(`User ${req.user?.email} accessed storage info`);
 
     res.status(HttpStatusCode.OK).json({
       success: true,
@@ -193,7 +213,7 @@ router.get('/info', async (req: Request, res: Response): Promise<void> => {
 /**
  * @route   GET /api/storage/health
  * @desc    Test Google Drive connectivity
- * @access  Public
+ * @access  Private (Authenticated users only)
  */
 router.get('/health', async (req: Request, res: Response): Promise<void> => {
   try {

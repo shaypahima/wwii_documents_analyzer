@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { DocumentController } from '../controllers/DocumentController';
-
+import { authenticateToken, optionalAuth } from '../middleware/authMiddleware';
 
 const router = Router();
 
@@ -73,17 +73,17 @@ router.delete('/:id', documentController.deleteDocument);
 /**
  * @route   POST /api/documents/analyze/:fileId
  * @desc    Analyze document from Google Drive (without saving)
- * @access  Public
+ * @access  Private (Authenticated users only)
  * @param   fileId - Google Drive file ID
  */
-router.post('/analyze/:fileId', documentController.analyzeDocument);
+router.post('/analyze/:fileId', authenticateToken, documentController.analyzeDocument);
 
 /**
  * @route   POST /api/documents/process/:fileId
  * @desc    Process and save document from Google Drive
- * @access  Public
+ * @access  Private (Authenticated users only)
  * @param   fileId - Google Drive file ID
  */
-router.post('/process/:fileId', documentController.processAndSaveDocument);
+router.post('/process/:fileId', authenticateToken, documentController.processAndSaveDocument);
 
 export default router;

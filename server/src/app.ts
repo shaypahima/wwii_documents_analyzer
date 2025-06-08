@@ -11,6 +11,7 @@ import { AppError, HttpStatusCode } from './types/common';
 import documentRoutes from './routes/documentRoutes';
 import entityRoutes from './routes/entityRoutes';
 import storageRoutes from './routes/storageRoutes';
+import authRoutes from './routes/authRoutes';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -80,10 +81,21 @@ class Server {
         version: '1.0.0',
         description: 'API for scanning and analyzing WWII historical documents',
         endpoints: {
+          auth: '/api/auth',
           documents: '/api/documents',
           entities: '/api/entities',
           storage: '/api/storage',
           health: '/health'
+        },
+        authentication: {
+          type: 'JWT Bearer Token',
+          register: 'POST /api/auth/register',
+          login: 'POST /api/auth/login',
+          protectedEndpoints: [
+            '/api/storage/*',
+            '/api/documents/analyze/*',
+            '/api/documents/process/*'
+          ]
         },
         timestamp: new Date().toISOString()
       });
@@ -92,11 +104,12 @@ class Server {
 
   private initializeRoutes(): void {
     // API routes
+    this.app.use('/api/auth', authRoutes);
     this.app.use('/api/documents', documentRoutes);
     this.app.use('/api/entities', entityRoutes);
     this.app.use('/api/storage', storageRoutes);
 
-    // 404 handler for unknown routes - using a more compatible pattern
+    // 404 handler for unknown routes
     this.app.use((req: Request, res: Response) => {
       res.status(HttpStatusCode.NOT_FOUND).json({
         success: false,
@@ -168,10 +181,12 @@ class Server {
         console.log(`🗄️  Database: Connected`);
         console.log(`📁 Google Drive Folder: ${config.GOOGLE_DRIVE_FOLDER_ID}`);
         console.log(`🤖 AI Service: Groq API configured`);
+        console.log(`🔐 Authentication: JWT enabled`);
         
         if (config.NODE_ENV === 'development') {
           console.log(`📖 API Documentation: http://localhost:${this.port}/api`);
           console.log(`❤️  Health Check: http://localhost:${this.port}/health`);
+          console.log(`🔑 Auth endpoints: http://localhost:${this.port}/api/auth`);
         }
       });
 

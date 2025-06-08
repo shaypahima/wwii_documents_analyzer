@@ -13,7 +13,9 @@
     "groq",
     "google-drive",
     "wwii",
-    "historical-documents"
+    "historical-documents",
+    "jwt",
+    "authentication"
   ],
   "license": "ISC",
   "author": "",
@@ -26,13 +28,20 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "clean": "rimraf dist",
-    "prebuild": "npm run clean"
+    "prebuild": "npm run clean",
+    "db:generate": "npx prisma generate",
+    "db:push": "npx prisma db push",
+    "db:migrate": "npx prisma migrate dev",
+    "db:studio": "npx prisma studio",
+    "db:seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
+    "@types/bcrypt": "^5.0.2",
     "@types/compression": "^1.8.0",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.29",
     "@types/pg": "^8.15.2",
     "bcrypt": "^6.0.0",
@@ -46,6 +55,7 @@
     "groq": "^3.90.0",
     "groq-sdk": "^0.23.0",
     "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
     "mammoth": "^1.9.1",
     "pdf2pic": "^3.2.0",
     "pdfjs-dist": "^5.2.133",

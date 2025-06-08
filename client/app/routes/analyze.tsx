@@ -163,7 +163,7 @@ export default function Analyze() {
                         target.nextElementSibling?.classList.remove('hidden');
                       }}
                     />
-                    <div className="hidden flex items-center justify-center h-full text-gray-400">
+                    <div className="flex items-center justify-center h-full text-gray-400">
                       <div className="text-center">
                         <FileText className="w-8 h-8 mx-auto mb-2" />
                         <p className="text-xs">Preview not available</p>

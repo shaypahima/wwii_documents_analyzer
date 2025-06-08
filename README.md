@@ -35,6 +35,7 @@ The project consists of two main components:
 ## ✨ Key Features
 
 ### 🗂️ Document Management
+
 - **Google Drive Integration** - Browse, search, and manage documents stored in Google Drive
 - **AI-Powered Analysis** - Automatic entity extraction and document classification using Groq AI
 - **Smart Organization** - Categorize documents by type (reports, letters, photos, maps, etc.)
@@ -42,6 +43,7 @@ The project consists of two main components:
 - **Metadata Extraction** - Automatic extraction of dates, people, locations, organizations, and events
 
 ### 🧠 AI-Powered Features
+
 - **Entity Recognition** - Extract and classify:
   - People (military personnel, civilians)
   - Locations (cities, battlefields, countries)
@@ -54,12 +56,14 @@ The project consists of two main components:
 - **Relationship Mapping** - Track connections between entities across documents
 
 ### 📊 Analytics & Insights
+
 - **Statistics Dashboard** - Overview of document collection metrics
 - **Entity Analytics** - Track frequency and relationships of extracted entities
 - **Search Analytics** - Find patterns in document content and metadata
 - **Collection Insights** - Understand the scope and coverage of your archive
 
 ### 🔧 Technical Features
+
 - **RESTful API** - Clean, well-documented API endpoints
 - **Real-time Processing** - Live document analysis and preview
 - **Responsive Design** - Works on desktop and mobile devices
@@ -70,18 +74,21 @@ The project consists of two main components:
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js (v16 or higher)
 - PostgreSQL database
 - Google Drive API credentials
 - Groq AI API key
 
 ### 1. Clone the Repository
+
 ```bash
 git clone <repository-url>
 cd graduation-project
 ```
 
 ### 2. Server Setup
+
 ```bash
 cd server
 npm install
@@ -99,6 +106,7 @@ npm run dev
 ```
 
 ### 3. Client Setup
+
 ```bash
 cd ../client
 npm install
@@ -111,18 +119,22 @@ npm run dev
 ```
 
 ### 4. Access the Application
-- **Client**: http://localhost:5173
-- **Server API**: http://localhost:5000
-- **API Documentation**: http://localhost:5000/api
+
+- **Client**: <http://localhost:5173>
+- **Server API**: <http://localhost:5000>
+- **API Documentation**: <http://localhost:5000/api>
 
 ## 📖 Documentation
 
 ### Component Documentation
+
 - **[Server Documentation](./server/README.md)** - Complete API documentation, endpoints, and backend setup
 - **[Client Documentation](./client/README.md)** - Frontend architecture, components, and usage guide
 
 ### API Endpoints
+
 The server provides RESTful endpoints for:
+
 - `/api/documents` - Document CRUD operations and analysis
 - `/api/entities` - Entity management and relationships
 - `/api/storage` - Google Drive integration and file operations
@@ -131,6 +143,7 @@ The server provides RESTful endpoints for:
 ### Key Technologies
 
 #### Frontend Stack
+
 - **React 19** - Modern React with concurrent features
 - **TypeScript** - Type safety and enhanced development experience
 - **React Router 7** - File-based routing and server-side rendering
@@ -139,6 +152,7 @@ The server provides RESTful endpoints for:
 - **Lucide React** - Modern icon library
 
 #### Backend Stack
+
 - **Node.js & Express.js** - Server runtime and web framework
 - **TypeScript** - Type-safe server development
 - **PostgreSQL** - Robust relational database
@@ -152,6 +166,7 @@ The server provides RESTful endpoints for:
 ### Required Environment Variables
 
 #### Server (`/server/.env`)
+
 ```env
 NODE_ENV=development
 PORT=5000
@@ -164,6 +179,7 @@ MAX_FILE_SIZE=50mb
 ```
 
 #### Client (`/client/.env`)
+
 ```env
 VITE_API_URL=http://localhost:5000/api
 ```
@@ -171,18 +187,21 @@ VITE_API_URL=http://localhost:5000/api
 ## 🧪 Testing
 
 ### Server Testing
+
 ```bash
 cd server
 npm test
 ```
 
 ### Client Testing
+
 ```bash
 cd client
 npm test
 ```
 
 ### API Health Check
+
 ```bash
 curl http://localhost:5000/health
 ```
@@ -190,6 +209,7 @@ curl http://localhost:5000/health
 ## 🚀 Deployment
 
 ### Production Build
+
 ```bash
 # Build server
 cd server
@@ -201,6 +221,7 @@ npm run build
 ```
 
 ### Environment Setup
+
 - Set `NODE_ENV=production`
 - Configure production database
 - Set up SSL certificates
@@ -215,6 +236,7 @@ npm run build
 5. Open a Pull Request
 
 ### Development Guidelines
+
 - Follow TypeScript best practices
 - Write tests for new features
 - Maintain API documentation
@@ -238,6 +260,7 @@ This project is licensed under the ISC License. See the LICENSE file for details
 ## 🆘 Support
 
 For questions, issues, or contributions:
+
 - Create an issue in the repository
 - Contact the development team
 - Check the documentation in `/server/README.md` and `/client/README.md`
@@ -246,7 +269,8 @@ For questions, issues, or contributions:
 
 This project is developed in collaboration with the **Museum of the Jewish Warrior in WWII**, serving as a practical digital preservation solution for their historical document collection. The partnership ensures that the system meets real-world needs of museums and cultural institutions while contributing to the preservation of Jewish military history during World War II.
 
-### Collaboration Benefits:
+### Collaboration Benefits
+
 - **Real-world Testing** - Direct feedback from museum professionals and historians
 - **Historical Accuracy** - Expert validation of entity extraction and categorization
 - **Cultural Preservation** - Supporting the mission to preserve and share Jewish military heritage
@@ -262,4 +286,4 @@ This project is developed in collaboration with the **Museum of the Jewish Warri
 
 ---
 
-**Built with ❤️ in collaboration with the Museum of the Jewish Warrior in WWII for preserving and making historical documents accessible to researchers, historians, and the public worldwide.** 
+**Built with ❤️ in collaboration with the Museum of the Jewish Warrior in WWII for preserving and making historical documents accessible to researchers, historians, and the public worldwide.**

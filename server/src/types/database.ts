@@ -9,7 +9,7 @@ export interface DatabaseDocument {
   documentType: DocumentType;
   createdAt: Date;
   updatedAt: Date;
-  entities: DatabaseEntity[];
+  entities?: DatabaseEntity[];
 }
 
 export interface DatabaseEntity {
