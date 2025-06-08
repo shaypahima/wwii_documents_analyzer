@@ -3,9 +3,14 @@ import { prisma } from './client';
 import bcrypt from 'bcrypt';
 
 const createDbIfNotExists = async () => {
+    // Use Docker service name when running in container, localhost otherwise
+    const host = process.env.NODE_ENV === 'development' && process.env.DATABASE_URL?.includes('database:') 
+        ? 'database' 
+        : 'localhost';
+    
     const client = new Client({
         user: 'postgres',
-        host: 'localhost', // replace with your PostgreSQL host if needed
+        host: host,
         password: '8663',
         port: 5432,
         database: 'postgres', // connect to default DB first

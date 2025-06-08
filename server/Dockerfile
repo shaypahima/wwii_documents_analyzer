@@ -4,7 +4,7 @@ FROM node:20-alpine AS base
 # Set working directory
 WORKDIR /app
 
-# Install dependencies needed for native packages
+# Install dependencies needed for native packages and pdf2pic
 RUN apk add --no-cache \
     cairo-dev \
     jpeg-dev \
@@ -22,7 +22,9 @@ RUN apk add --no-cache \
     freetype-dev \
     harfbuzz \
     ca-certificates \
-    ttf-freefont
+    ttf-freefont \
+    graphicsmagick \
+    ghostscript
 
 # Set Puppeteer to use system Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
