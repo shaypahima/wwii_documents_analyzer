@@ -22,23 +22,64 @@ export class StorageService {
   private async initializeAuth() {
     try {
       const credentials = config.GOOGLE_CREDENTIALS_PATH;
+      
+      // Try multiple possible paths for credentials
+      const possiblePaths = [
+        credentials,
+        path.resolve(process.cwd(), 'src/config/service-account-key.json'),
+        path.resolve(__dirname, '../config/service-account-key.json'),
+        path.resolve(__dirname, 'service-account-key.json'),
+        path.resolve(__dirname, '../config/credentials/service-account-key.json')
+      ];
+      
+      let validCredentialsPath: string | null = null;
+      
+      // Check each path until we find one that exists
+      for (const credPath of possiblePaths) {
+        if (fs.existsSync(credPath)) {
+          validCredentialsPath = credPath;
+          logger.info(`Found Google credentials at: ${credPath}`);
+          break;
+        } else {
+          logger.debug(`Credentials not found at: ${credPath}`);
+        }
+      }
 
-      if (!fs.existsSync(credentials)) {
-        throw new Error(
-          `Google credentials file not found at ${credentials}. ` +
-            "Please ensure GOOGLE_CREDENTIALS_PATH is set correctly or the credentials file exists."
-        );
+      if (!validCredentialsPath) {
+        const errorMsg = `Google credentials file not found. Tried paths:\n${possiblePaths.map(p => `  - ${p}`).join('\n')}\n` +
+          'Please ensure GOOGLE_CREDENTIALS_PATH is set correctly or the credentials file exists.';
+        logger.error(errorMsg);
+        throw new Error(errorMsg);
+      }
+
+      // Validate that the credentials file has valid JSON content
+      try {
+        const credentialsContent = fs.readFileSync(validCredentialsPath, 'utf8');
+        const credentialsJson = JSON.parse(credentialsContent);
+        
+        // Basic validation of Google service account key structure
+        if (!credentialsJson.type || !credentialsJson.private_key || !credentialsJson.client_email) {
+          throw new Error('Invalid Google service account key format');
+        }
+        
+        logger.info(`Credentials validation successful for: ${credentialsJson.client_email}`);
+      } catch (parseError) {
+        const errorMsg = `Invalid Google credentials file at ${validCredentialsPath}: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`;
+        logger.error(errorMsg);
+        throw new Error(errorMsg);
       }
 
       this.auth = new google.auth.GoogleAuth({
-        keyFile: credentials,
+        keyFile: validCredentialsPath,
         scopes: [
           "https://www.googleapis.com/auth/drive.readonly",
           "https://www.googleapis.com/auth/drive.metadata.readonly",
         ],
       });
+      
+      logger.info('Google Auth initialized successfully');
     } catch (error) {
-      logger.error("Error initializing Google Drive", error);
+      logger.error("Error initializing Google Drive Auth", error);
       throw new AppError("Failed to initialize Google Drive");
     }
   }

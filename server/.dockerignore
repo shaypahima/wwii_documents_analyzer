@@ -7,12 +7,24 @@ yarn-error.log*
 # Production builds
 build/
 dist/
-.react-router/
 
 # Development files
 .env.example
 .env.development
 .env.test
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
 
 # IDE files
 .vscode/
@@ -34,7 +46,6 @@ Thumbs.db
 .git/
 .gitignore
 README.md
-README_backup.md
 
 # Docker
 Dockerfile*
@@ -45,17 +56,12 @@ coverage/
 .jest-cache/
 *.test.js
 *.test.ts
-*.test.jsx
-*.test.tsx
 __tests__/
 
-# Storybook
-.storybook/
-storybook-static/
+# Prisma
+prisma/dev.db
+prisma/migrations/
 
 # Temporary files
 tmp/
-temp/
-
-# Vite
-.vite/
+temp/ 

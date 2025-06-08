@@ -1,0 +1,88 @@
+services:
+  # PostgreSQL Database
+  database:
+    image: postgres:15-alpine
+    container_name: wwii_scanner_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 8663
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - wwii_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Node.js Backend Server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      target: development
+    container_name: wwii_scanner_server
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      DATABASE_URL: postgresql://postgres:8663@database:5432/mydb
+      GOOGLE_CREDENTIALS_PATH: ./src/config/service-account-key.json
+      GOOGLE_DRIVE_FOLDER_ID: 1UYj9HKZOrkJkN5B1ssqX3_3CZELo02Bp
+      GROQ_API_KEY: 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
+      JWT_SECRET: your-super-secret-jwt-key-here-make-it-long-and-random
+    volumes:
+      - /app/node_modules
+    networks:
+      - wwii_network
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # React Frontend Client
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      target: development
+    container_name: wwii_scanner_client
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:5000/api
+    volumes:
+      - /app/node_modules
+    networks:
+      - wwii_network
+    depends_on:
+      - server
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5173 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+networks:
+  wwii_network:
+    driver: bridge
+    name: wwii_scanner_network
+
+volumes:
+  postgres_data:
+    name: wwii_scanner_postgres_data 

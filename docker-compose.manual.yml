@@ -1,0 +1,12 @@
+# Alternative Docker Compose for manual server execution
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.manual.yml up -d
+
+version: '3.8'
+
+services:
+  server:
+    command: ["tail", "-f", "/dev/null"]  # Keep container running without starting server
+    tty: true
+    stdin_open: true
+
+# After starting, run: docker-compose exec server ts-node ./index.ts 
