@@ -1,39 +1,31 @@
-# Dependencies
+# Dependencies and package managers
 node_modules/
+*/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
 
-# Production builds
+# Build outputs
 */build/
 */dist/
+build/
+dist/
+.next/
+.cache/
 
-# Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Environment files - exclude entire env directory and .env files
+env/
+.env*
+*.env
 
-# Logs
-logs/
-*.log
-
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# IDE files
+# Development and IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.eslintcache
 
 # OS generated files
 .DS_Store
@@ -44,31 +36,66 @@ coverage/
 ehthumbs.db
 Thumbs.db
 
-# Git
+# Git and version control
 .git/
 .gitignore
+.gitattributes
 
-# Docker
-Dockerfile*
+# Docker files (avoid recursive copying)
+dockerfiles/
 docker-compose*.yml
 .dockerignore
+Dockerfile*
 
-# Temporary files
-tmp/
-temp/
+# Logs and runtime data
+logs/
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Testing and coverage
+coverage/
+.jest-cache/
+.nyc_output/
+test-results/
 
 # Database files
 *.db
 *.sqlite
-
-# Testing
-coverage/
-.jest-cache/
-
-# Prisma
+*.sqlite3
+database/
 prisma/dev.db
 prisma/migrations/
+*.sql
 
-# Build tools
-.next/
-.cache/ 
+# Temporary and cache files
+tmp/
+temp/
+.tmp/
+.cache/
+.parcel-cache/
+
+# React specific
+client/.react-router/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Server specific excludes
+server/logs/
+
+# Documentation (unless needed for build)
+*.md
+README*
+CHANGELOG*
+LICENSE*
+
+# Configuration files that shouldn't be in container
+.prettierrc*
+.eslintrc*
+
+# Platform specific
+.vercel/
+.netlify/ 
