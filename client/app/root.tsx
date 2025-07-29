@@ -34,6 +34,7 @@ const queryClient = new QueryClient({
 });
 
 export const links: Route.LinksFunction = () => [
+  { rel: "icon", href: "/icon.jpg", type: "image/jpeg" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
@@ -50,10 +51,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <Links />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>The Chaim Herzog Museum of the Jewish Soldier in World War II</title>
+        <meta name="description" content="The Chaim Herzog Museum tells the important and neglected chapter of Jewish heroism in WWII, honoring 1,500,000 Jewish soldiers who served in Allied forces and perpetuating the memory of 250,000 who gave their lives." />
         <Meta />
-        <Links />
       </head>
       <body>
         {children}

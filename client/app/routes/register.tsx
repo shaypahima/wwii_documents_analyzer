@@ -2,6 +2,14 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Eye, EyeOff, UserPlus, Loader2, AlertCircle, ArrowLeft, FileText, Users, Archive, Shield } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import type { Route } from './+types/register';
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "Create Account - The Chaim Herzog Museum" },
+    { name: "description", content: "Create an account to access the Chaim Herzog Museum digital archive of Jewish soldiers in World War II." },
+  ];
+}
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -70,11 +78,15 @@ export default function Register() {
           <div className="max-w-md">
             <div className="flex items-center mb-8">
               <div className="bg-white bg-opacity-20 p-3 rounded-xl backdrop-blur-sm">
-                <Archive className="w-8 h-8 text-white" />
+                <img 
+                  src="/icon.jpg" 
+                  alt="Chaim Herzog Museum Logo" 
+                  className="w-8 h-8 object-contain"
+                />
               </div>
               <div className="ml-4">
-                <h1 className="text-2xl font-bold">Document Archive</h1>
-                <p className="text-purple-100">Museum of the Jewish Warrior in WWII</p>
+                <h1 className="text-2xl font-bold">Chaim Herzog Museum</h1>
+                <p className="text-purple-100">Jewish Soldier in World War II</p>
               </div>
             </div>
             
@@ -84,7 +96,7 @@ export default function Register() {
             </h2>
             
             <p className="text-lg text-purple-100 mb-8 leading-relaxed">
-              Create your account to access exclusive historical documents and contribute to preserving the stories of Jewish resistance heroes.
+              Create your account to access exclusive historical documents and contribute to preserving the stories of Jewish soldiers, resistance fighters, and heroes who fought against Nazi tyranny.
             </p>
             
             <div className="space-y-4">
@@ -94,7 +106,7 @@ export default function Register() {
               </div>
               <div className="flex items-center text-purple-100">
                 <FileText className="w-5 h-5 mr-3 text-purple-200" />
-                <span>Personalized research capabilities</span>
+                <span>AI-powered document analysis tools</span>
               </div>
               <div className="flex items-center text-purple-100">
                 <Users className="w-5 h-5 mr-3 text-purple-200" />
@@ -104,9 +116,9 @@ export default function Register() {
 
             <div className="mt-12 p-6 bg-white rounded-xl shadow-lg border border-gray-200">
               <p className="text-sm text-gray-800 font-medium leading-relaxed">
-                "Every document tells a story. Every story honors a hero. Join us in preserving these precious memories for future generations."
+                "Every document tells a story. Every story honors a hero. Join us in preserving the memory of 1.5 million Jewish soldiers for future generations."
               </p>
-              <p className="text-xs text-gray-600 mt-2 font-medium">— Museum Director</p>
+              <p className="text-xs text-gray-600 mt-2 font-medium">— Museum Mission</p>
             </div>
           </div>
         </div>
@@ -130,11 +142,15 @@ export default function Register() {
             <div className="lg:hidden mb-8">
               <div className="flex items-center">
                 <div className="bg-indigo-600 p-2 rounded-lg">
-                  <Archive className="w-6 h-6 text-white" />
+                  <img 
+                    src="/icon.jpg" 
+                    alt="Museum Logo" 
+                    className="w-6 h-6 object-contain"
+                  />
                 </div>
                 <div className="ml-3">
-                  <h1 className="text-xl font-bold text-gray-900">Document Archive</h1>
-                  <p className="text-sm text-gray-600">Museum of the Jewish Warrior</p>
+                  <h1 className="text-xl font-bold text-gray-900">Chaim Herzog Museum</h1>
+                  <p className="text-sm text-gray-600">Jewish Soldier in WWII</p>
                 </div>
               </div>
             </div>
@@ -291,7 +307,7 @@ export default function Register() {
                 <a href="#" className="text-indigo-600 hover:text-indigo-500 font-medium">
                   Privacy Policy
                 </a>
-                . Your data is protected and used solely for research purposes.
+                . Your data is protected and used solely for historical research and preservation purposes.
               </p>
             </div>
           </div>

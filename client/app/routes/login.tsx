@@ -2,6 +2,14 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Eye, EyeOff, LogIn, Loader2, AlertCircle, ArrowLeft, FileText, Users, Archive } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import type { Route } from './+types/login';
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "Sign In - The Chaim Herzog Museum" },
+    { name: "description", content: "Sign in to access the Chaim Herzog Museum digital archive of Jewish soldiers in World War II." },
+  ];
+}
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -48,11 +56,15 @@ export default function Login() {
           <div className="max-w-md">
             <div className="flex items-center mb-8">
               <div className="bg-white bg-opacity-20 p-3 rounded-xl backdrop-blur-sm">
-                <Archive className="w-8 h-8 text-white" />
+                <img 
+                  src="/icon.jpg" 
+                  alt="Chaim Herzog Museum Logo" 
+                  className="w-8 h-8 object-contain"
+                />
               </div>
               <div className="ml-4">
-                <h1 className="text-2xl font-bold">Document Archive</h1>
-                <p className="text-blue-100">Museum of the Jewish Warrior in WWII</p>
+                <h1 className="text-2xl font-bold">Chaim Herzog Museum</h1>
+                <p className="text-blue-100">Jewish Soldier in World War II</p>
               </div>
             </div>
             
@@ -62,22 +74,29 @@ export default function Login() {
             </h2>
             
             <p className="text-lg text-blue-100 mb-8 leading-relaxed">
-              Access our comprehensive digital archive of historical documents and photographs documenting Jewish soldiers who served in Allied forces during World War II.
+              Access our comprehensive digital archive documenting the 1.5 million Jewish soldiers who served in Allied forces, Partisans, and resistance movements during World War II.
             </p>
             
             <div className="space-y-4">
               <div className="flex items-center text-blue-100">
                 <FileText className="w-5 h-5 mr-3 text-blue-200" />
-                <span>Thousands of digitized documents</span>
+                <span>Historical documents and testimonies</span>
               </div>
               <div className="flex items-center text-blue-100">
                 <Users className="w-5 h-5 mr-3 text-blue-200" />
-                <span>Personal stories.</span>
+                <span>Stories of heroism and resistance</span>
               </div>
               <div className="flex items-center text-blue-100">
                 <Archive className="w-5 h-5 mr-3 text-blue-200" />
-                <span>Searchable historical database</span>
+                <span>AI-powered document analysis</span>
               </div>
+            </div>
+
+            <div className="mt-12 p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+              <p className="text-sm text-gray-800 font-medium leading-relaxed">
+                "Honoring the 1,500,000 Jewish soldiers who served and the 250,000 who gave their lives fighting against Nazi tyranny."
+              </p>
+              <p className="text-xs text-gray-600 mt-2 font-medium">— Museum Mission</p>
             </div>
           </div>
         </div>
@@ -101,11 +120,15 @@ export default function Login() {
             <div className="lg:hidden mb-8">
               <div className="flex items-center">
                 <div className="bg-blue-600 p-2 rounded-lg">
-                  <Archive className="w-6 h-6 text-white" />
+                  <img 
+                    src="/icon.jpg" 
+                    alt="Museum Logo" 
+                    className="w-6 h-6 object-contain"
+                  />
                 </div>
                 <div className="ml-3">
-                  <h1 className="text-xl font-bold text-gray-900">Document Archive</h1>
-                  <p className="text-sm text-gray-600">Museum of the Jewish Warrior</p>
+                  <h1 className="text-xl font-bold text-gray-900">Chaim Herzog Museum</h1>
+                  <p className="text-sm text-gray-600">Jewish Soldier in WWII</p>
                 </div>
               </div>
             </div>

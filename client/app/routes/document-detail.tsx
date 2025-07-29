@@ -1,15 +1,25 @@
-import { useParams, Link } from 'react-router';
-import { ArrowLeft, FileText, User, MapPin, Building, Calendar, Download } from 'lucide-react';
+import { useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router';
+import { ArrowLeft, FileText, User, MapPin, Building, Calendar, Download, Edit3, Trash2 } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { ImagePreview } from '../components/ImagePreview';
-import { useDocument } from '../hooks/useDocuments';
+import { DocumentEditModal } from '../components/DocumentEditModal';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { useDocument, useUpdateDocument, useDeleteDocument } from '../hooks/useDocuments';
 import { useFileDownload } from '../hooks/useStorage';
-import type { EntityType } from '../lib/types';
+import type { EntityType, DocumentType } from '../lib/types';
 
 export default function DocumentDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { data: document, isLoading: loading, error } = useDocument(id);
   const downloadMutation = useFileDownload();
+  const updateMutation = useUpdateDocument();
+  const deleteMutation = useDeleteDocument();
+
+  // Modal states
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const handleDownload = async () => {
     if (document?.fileId && document?.fileName) {
@@ -21,6 +31,39 @@ export default function DocumentDetail() {
       } catch (err) {
         console.error('Download failed:', err);
       }
+    }
+  };
+
+  const handleEdit = () => {
+    setEditModalOpen(true);
+  };
+
+  const handleEditSave = async (data: { title: string; content: string; documentType: DocumentType }) => {
+    if (!document) return;
+    
+    try {
+      await updateMutation.mutateAsync({
+        id: document.id,
+        data,
+      });
+      setEditModalOpen(false);
+    } catch (err) {
+      console.error('Update failed:', err);
+    }
+  };
+
+  const handleDelete = () => {
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!document) return;
+    
+    try {
+      await deleteMutation.mutateAsync(document.id);
+      navigate('/documents');
+    } catch (err) {
+      console.error('Delete failed:', err);
     }
   };
 
@@ -141,14 +184,32 @@ export default function DocumentDetail() {
               </span>
             </div>
           </div>
-          <button
-            onClick={handleDownload}
-            disabled={downloadMutation.isPending}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            {downloadMutation.isPending ? 'Downloading...' : 'Download Original'}
-          </button>
+          <div className="flex items-center space-x-3">
+                         <button
+               type="button"
+               onClick={handleEdit}
+               className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+             >
+               <Edit3 className="w-4 h-4 mr-2" />
+               Edit
+             </button>
+             <button
+               type="button"
+               onClick={handleDelete}
+               className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+             >
+               <Trash2 className="w-4 h-4 mr-2" />
+               Delete
+             </button>
+            <button
+              onClick={handleDownload}
+              disabled={downloadMutation.isPending}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {downloadMutation.isPending ? 'Downloading...' : 'Download Original'}
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -264,6 +325,29 @@ export default function DocumentDetail() {
             </div>
           </div>
         </div>
+
+        {/* Edit Modal */}
+        {document && (
+          <DocumentEditModal
+            isOpen={editModalOpen}
+            onClose={() => setEditModalOpen(false)}
+            onSave={handleEditSave}
+            document={document}
+            isLoading={updateMutation.isPending}
+          />
+        )}
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={deleteConfirmOpen}
+          onClose={() => setDeleteConfirmOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          title="Delete Document"
+          message={`Are you sure you want to delete "${document?.title || 'this document'}"? This action cannot be undone and will remove the document from your archive.`}
+          confirmText="Delete"
+          confirmVariant="danger"
+          isLoading={deleteMutation.isPending}
+        />
       </div>
     </Layout>
   );
