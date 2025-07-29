@@ -245,16 +245,22 @@ export default function Drive() {
                               getFileIcon(item.name, 'h-8 w-8')
                             )}
                           </div>
-                          <div className="ml-4">
+                          <div className="ml-4 min-w-0 max-w-xs">
                             {(item.type === 'folder' || item.isFolder) ? (
                               <button
                                 onClick={() => handleFolderClick(item)}
-                                className="text-sm font-medium text-blue-600 hover:text-blue-900"
+                                className="text-sm font-medium text-blue-600 hover:text-blue-900 truncate block w-full text-left"
+                                title={item.name}
                               >
                                 {item.name}
                               </button>
                             ) : (
-                              <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                              <div 
+                                className="text-sm font-medium text-gray-900 truncate"
+                                title={item.name}
+                              >
+                                {item.name}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -314,12 +320,18 @@ export default function Drive() {
                         {(item.type === 'folder' || item.isFolder) ? (
                           <button
                             onClick={() => handleFolderClick(item)}
-                            className="text-sm font-medium text-blue-600 hover:text-blue-900 truncate block"
+                            className="text-sm font-medium text-blue-600 hover:text-blue-900 truncate block w-full text-left"
+                            title={item.name}
                           >
                             {item.name}
                           </button>
                         ) : (
-                          <div className="text-sm font-medium text-gray-900 truncate">{item.name}</div>
+                          <div 
+                            className="text-sm font-medium text-gray-900 truncate"
+                            title={item.name}
+                          >
+                            {item.name}
+                          </div>
                         )}
                         <div className="text-xs text-gray-500">
                           {(item.type === 'folder' || item.isFolder) ? 'Folder' : 
