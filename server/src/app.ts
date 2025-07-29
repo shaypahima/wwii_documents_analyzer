@@ -167,7 +167,7 @@ class Server {
     try {
       // Connect to database
       await DatabaseClient.connect();
-      
+      console.log('Database URL:', config.DATABASE_URL);
       // Test database connection
       const isHealthy = await DatabaseClient.healthCheck();
       if (!isHealthy) {

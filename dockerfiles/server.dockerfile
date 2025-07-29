@@ -45,6 +45,8 @@ COPY . .
 # Generate Prisma client
 RUN npx prisma generate
 
+RUN npx prisma db push
+
 # Ensure credentials file exists and has correct permissions
 RUN if [ -f "./src/config/service-account-key.json" ]; then \
       echo "Google credentials file found"; \
